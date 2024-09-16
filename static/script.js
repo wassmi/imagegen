@@ -13,9 +13,6 @@ function showImageDetails(image) {
         <div class="image-details">
             <h3>Prompt:</h3>
             <p>${image.prompt}</p>
-            <h3>Details:</h3>
-            <p>Aspect Ratio: ${image.aspectRatio || 'Not specified'}</p>
-            <p>Format: ${image.format || 'Not specified'}</p>
         </div>
     `;
     modal.style.display = 'block';
