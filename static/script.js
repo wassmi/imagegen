@@ -57,12 +57,17 @@ function updateFavoritesList() {
             favoritesList.innerHTML = '';
             favorites.forEach(fav => {
                 const li = document.createElement('li');
+                li.className = 'favorite-item';
                 li.innerHTML = `
-                    <img src="${fav.url}" alt="${fav.prompt}" data-id="${fav.image_id}">
-                    <span class="description">${fav.prompt}</span>
-                    <button class="delete-favorite" data-id="${fav.image_id}">
-                        <i class="far fa-trash-alt"></i>
-                    </button>
+                    <div class="favorite-image-container">
+                        <img src="${fav.url}" alt="${fav.prompt}" data-id="${fav.image_id}">
+                    </div>
+                    <div class="favorite-content">
+                        <span class="favorite-prompt">${fav.prompt}</span>
+                        <button class="delete-favorite" data-id="${fav.image_id}">
+                            <i class="far fa-trash-alt"></i>
+                        </button>
+                    </div>
                 `;
                 favoritesList.appendChild(li);
             });
@@ -117,15 +122,18 @@ function attachDeleteFavoriteListeners() {
 }
 
 function attachFavoritesImageClickListeners() {
-    const favoriteImages = document.querySelectorAll('#favorites-list img');
-    favoriteImages.forEach(img => {
-        img.addEventListener('click', function() {
-            const imageDetails = {
-                url: this.src,
-                prompt: this.alt,
-                id: this.dataset.id
-            };
-            showImageDetails(imageDetails);
+    const favoriteItems = document.querySelectorAll('.favorite-item');
+    favoriteItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (!e.target.closest('.delete-favorite')) {
+                const img = this.querySelector('img');
+                const imageDetails = {
+                    url: img.src,
+                    prompt: img.alt,
+                    id: img.dataset.id
+                };
+                showImageDetails(imageDetails);
+            }
         });
     });
 }
@@ -196,12 +204,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 favoritesList.innerHTML = '';
                 favorites.forEach(fav => {
                     const li = document.createElement('li');
+                    li.className = 'favorite-item';
                     li.innerHTML = `
-                        <img src="${fav.url}" alt="${fav.prompt}" data-id="${fav.image_id}">
-                        <span class="description">${fav.prompt}</span>
-                        <button class="delete-favorite" data-id="${fav.image_id}">
-                            <i class="far fa-trash-alt"></i>
-                        </button>
+                        <div class="favorite-image-container">
+                            <img src="${fav.url}" alt="${fav.prompt}" data-id="${fav.image_id}">
+                        </div>
+                        <div class="favorite-content">
+                            <span class="favorite-prompt">${fav.prompt}</span>
+                            <button class="delete-favorite" data-id="${fav.image_id}">
+                                <i class="far fa-trash-alt"></i>
+                            </button>
+                        </div>
                     `;
                     favoritesList.appendChild(li);
                 });
