@@ -58,7 +58,7 @@ function updateFavoritesList() {
             favorites.forEach(fav => {
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <img src="${fav.url}" alt="Favorite Image">
+                    <img src="${fav.url}" alt="${fav.prompt}" data-id="${fav.image_id}">
                     <span class="description">${fav.prompt}</span>
                     <button class="delete-favorite" data-id="${fav.image_id}">
                         <i class="far fa-trash-alt"></i>
@@ -67,6 +67,7 @@ function updateFavoritesList() {
                 favoritesList.appendChild(li);
             });
             attachDeleteFavoriteListeners();
+            attachFavoritesImageClickListeners();
         })
         .catch(error => {
             console.error('Error updating favorites:', error);
@@ -111,6 +112,20 @@ function attachDeleteFavoriteListeners() {
         button.addEventListener('click', function() {
             const imageId = this.dataset.id;
             toggleFavorite(imageId);
+        });
+    });
+}
+
+function attachFavoritesImageClickListeners() {
+    const favoriteImages = document.querySelectorAll('#favorites-list img');
+    favoriteImages.forEach(img => {
+        img.addEventListener('click', function() {
+            const imageDetails = {
+                url: this.src,
+                prompt: this.alt,
+                id: this.dataset.id
+            };
+            showImageDetails(imageDetails);
         });
     });
 }
@@ -182,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 favorites.forEach(fav => {
                     const li = document.createElement('li');
                     li.innerHTML = `
-                        <img src="${fav.url}" alt="Favorite Image">
+                        <img src="${fav.url}" alt="${fav.prompt}" data-id="${fav.image_id}">
                         <span class="description">${fav.prompt}</span>
                         <button class="delete-favorite" data-id="${fav.image_id}">
                             <i class="far fa-trash-alt"></i>
@@ -191,6 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     favoritesList.appendChild(li);
                 });
                 attachDeleteFavoriteListeners();
+                attachFavoritesImageClickListeners();
             })
             .catch(error => {
                 console.error('Error updating favorites:', error);
