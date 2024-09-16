@@ -252,7 +252,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Image history functionality
+    let isLoadingHistory = false;
+    let lastLoadedHistory = null;
+
     function loadImageHistory() {
+        if (isLoadingHistory) {
+            console.log('Already loading image history, please wait...');
+            return;
+        }
+
+        if (lastLoadedHistory) {
+            console.log('Using cached image history');
+            updateHistoryGallery(lastLoadedHistory);
+            return;
+        }
+
+        isLoadingHistory = true;
         console.log('Fetching image history...');
         fetch('/image_history')
             .then(response => {
@@ -263,38 +278,79 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(images => {
                 console.log('Received image history:', images);
-                const historyGallery = document.getElementById('history-gallery');
-                historyGallery.innerHTML = '';
-                if (images.length === 0) {
-                    console.log('No images in history');
-                    historyGallery.innerHTML = '<p>No images in history.</p>';
-                } else {
-                    images.forEach(image => {
-                        const imageElement = createImageElement(image);
-                        historyGallery.appendChild(imageElement);
-                    });
-                }
-                attachFavoriteListeners();
-                attachImageClickListeners();
+                lastLoadedHistory = images;
+                updateHistoryGallery(images);
             })
             .catch(error => {
                 console.error('Error loading image history:', error);
                 const historyGallery = document.getElementById('history-gallery');
                 historyGallery.innerHTML = `<p>Error loading history: ${error.message}</p>`;
+            })
+            .finally(() => {
+                isLoadingHistory = false;
             });
     }
 
-    function deleteHistoryItem(imageId) {
-        fetch('/delete_history/' + imageId, { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'deleted') {
-                    loadImageHistory();
+    function updateHistoryGallery(images) {
+        const historyGallery = document.getElementById('history-gallery');
+        historyGallery.innerHTML = '';
+        if (images.length === 0) {
+            console.log('No images in history');
+            historyGallery.innerHTML = '<p>No images in history.</p>';
+        } else {
+            images.forEach(image => {
+                if (image.url) {
+                    const imageElement = createImageElement(image);
+                    historyGallery.appendChild(imageElement);
+                } else {
+                    console.warn(`Skipping image with id ${image.id} due to missing URL`);
                 }
-            })
-            .catch(error => {
-                console.error('Error deleting history item:', error);
             });
+        }
+        attachFavoriteListeners();
+        attachImageClickListeners();
+    }
+
+    function createImageElement(image) {
+        const div = document.createElement('div');
+        div.className = 'image-item';
+        div.innerHTML = `
+            <img src="${image.url}" alt="${image.prompt}" data-id="${image.id}" onerror="this.onerror=null; this.src='/static/placeholder.png'; console.warn('Image failed to load:', '${image.url}');">
+            <div class="image-info">
+                <p>${image.prompt}</p>
+                <p>Generated: ${new Date(image.created_at).toLocaleString()}</p>
+            </div>
+            <button class="favorite-button ${image.is_favorite ? 'active' : ''}" data-id="${image.id}">
+                <i class="${image.is_favorite ? 'fas' : 'far'} fa-heart"></i>
+            </button>
+            <button class="delete-image" data-id="${image.id}">
+                <i class="far fa-trash-alt"></i>
+            </button>
+        `;
+        return div;
+    }
+
+    // Modify the history button click event listener
+    historyButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        generateButton.classList.remove('active');
+        historyButton.classList.add('active');
+        trashBinButton.classList.remove('active');
+        imageGenerator.classList.remove('active');
+        imageHistory.classList.add('active');
+        trashBin.classList.remove('active');
+        loadImageHistory();
+    });
+
+    // Add a function to clear the history cache
+    function clearHistoryCache() {
+        lastLoadedHistory = null;
+    }
+
+    // Call this function when you know the history has changed (e.g., after deleting or restoring an image)
+    function refreshImageHistory() {
+        clearHistoryCache();
+        loadImageHistory();
     }
 
     // Trash bin functionality
@@ -321,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.status === 'restored') {
                     loadTrashBin();
-                    loadImageHistory();
+                    refreshImageHistory();
                 }
             })
             .catch(error => {
@@ -394,26 +450,6 @@ document.addEventListener('DOMContentLoaded', function() {
             sidebar.classList.remove('active');
         }
     });
-
-    // Helper function to create an image element
-    function createImageElement(image) {
-        const div = document.createElement('div');
-        div.className = 'image-item';
-        div.innerHTML = `
-            <img src="${image.url}" alt="${image.prompt}" data-id="${image.id}">
-            <div class="image-info">
-                <p>${image.prompt}</p>
-                <p>Generated: ${new Date(image.created_at).toLocaleString()}</p>
-            </div>
-            <button class="favorite-button ${image.is_favorite ? 'active' : ''}" data-id="${image.id}">
-                <i class="${image.is_favorite ? 'fas' : 'far'} fa-heart"></i>
-            </button>
-            <button class="delete-image" data-id="${image.id}">
-                <i class="far fa-trash-alt"></i>
-            </button>
-        `;
-        return div;
-    }
 });
 
 function attachImageClickListeners() {
@@ -438,7 +474,7 @@ function deleteImage(imageId) {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'deleted') {
-                loadImageHistory();
+                refreshImageHistory();
                 updateFavoritesList();
             }
         })
@@ -453,7 +489,7 @@ function restoreImage(imageId) {
         .then(data => {
             if (data.status === 'restored') {
                 loadTrashBin();
-                loadImageHistory();
+                refreshImageHistory();
             }
         })
         .catch(error => {
