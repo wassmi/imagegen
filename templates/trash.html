@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trash Bin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        #trash-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .trash-item {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            width: 250px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .trash-item img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        .restore-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            margin-top: 10px;
+            border-radius: 4px;
+            width: 100%;
+        }
+        .restore-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Trash Bin</h1>
+    <div id="trash-items"></div>
+
+    <script>
+        // Fetch trash items from the server
+        fetch('/recycle_bin')
+            .then(response => response.json())
+            .then(items => {
+                const trashContainer = document.getElementById('trash-items');
+                items.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'trash-item';
+                    itemElement.innerHTML = `
+                        <img src="${item.url}" alt="Deleted image">
+                        <p>Deleted at: ${new Date(item.deleted_at).toLocaleString()}</p>
+                        <button class="restore-btn" onclick="restoreImage(${item.image_id})">Restore</button>
+                    `;
+                    trashContainer.appendChild(itemElement);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching trash items:', error);
+            });
+
+        function restoreImage(imageId) {
+            fetch(`/restore_image/${imageId}`, { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'restored') {
+                    alert('Image restored successfully!');
+                    // Remove the restored item from the view
+                    document.querySelector(`.trash-item button[onclick="restoreImage(${imageId})"]`)
+                        .closest('.trash-item')
+                        .remove();
+                } else {
+                    alert('Failed to restore image.');
+                }
+            })
+            .catch(error => {
+                console.error('Error restoring image:', error);
+                alert('An error occurred while restoring the image.');
+            });
+        }
+    </script>
+</body>
+</html>

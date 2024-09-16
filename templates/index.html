@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Generator by Wasmi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <!-- Add this button just inside the body tag, before the app-container div -->
+    <button id="burger-menu" class="burger-menu" aria-label="Open menu">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="app-container">
+        <nav class="sidebar">
+            <button id="close-sidebar" class="close-sidebar" aria-label="Close sidebar">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="app-title"><i class="fas fa-wand-magic-sparkles"></i> AI Image Generator</h2>
+            <div class="nav-buttons">
+                <button id="generate-button" class="nav-button active" title="Generate Image"><i class="fas fa-plus-circle"></i></button>
+                <a href="#" id="history-button" class="nav-button" title="View History"><i class="fas fa-history"></i></a>
+            </div>
+            <h3 class="favorites-title"><i class="fas fa-heart"></i> Favorites</h3>
+            <div class="favorites-list-container">
+                <ul id="favorites-list" class="favorites-list">
+                    <!-- Favorite images will be added here dynamically -->
+                </ul>
+            </div>
+            <div class="sidebar-footer">
+                <button id="trash-bin-button" class="nav-button" title="Trash Bin"><i class="fas fa-trash"></i></button>
+            </div>
+        </nav>
+        <main class="content">
+            
+            <div id="image-generator" class="tool-content active">
+                <h1 class="tool-title">Image Generator</h1>
+                <form id="image-form" class="tool-form" onsubmit="return false;">
+                    <div class="input-group">
+                        <input type="text" id="prompt" name="prompt" placeholder="Enter your prompt" required>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-bolt"></i> Generate</button>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="quality">
+                                <i class="fas fa-star"></i> Quality
+                                <span id="quality-value">50</span>
+                            </label>
+                            <input type="range" id="quality" name="quality" min="1" max="100" value="50">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="prompt-strength">
+                                <i class="fas fa-fire"></i> Prompt Strength
+                                <span id="prompt-strength-value">0.5</span>
+                            </label>
+                            <input type="range" id="prompt-strength" name="prompt_strength" min="0" max="1" step="0.1" value="0.5">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="aspect-ratio"><i class="fas fa-crop-alt"></i> Aspect Ratio</label>
+                            <select id="aspect-ratio" name="aspect-ratio">
+                                <option value="1:1">1:1 (Square)</option>
+                                <option value="16:9">16:9 (Widescreen)</option>
+                                <option value="4:3">4:3 (Standard)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="image-format"><i class="fas fa-file-image"></i> Image Format</label>
+                            <select id="image-format" name="image_format">
+                                <option value="webp">WebP</option>
+                                <option value="png">PNG</option>
+                                <option value="jpeg">JPEG</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label for="disable-safety-check" class="safety-check-label">
+                            <input type="checkbox" id="disable-safety-check" name="disable_safety_check">
+                            <span class="checkbox-text"><i class="fas fa-shield-alt"></i> Disable Safety Check</span>
+                        </label>
+                        <p class="helper-text safety-warning">Use with caution. May generate sensitive content.</p>
+                    </div>
+                </form>
+                <div id="image-result" class="result-container">
+                    <div class="image-container">
+                        <!-- The generated image will be inserted here -->
+                    </div>
+                    <button class="favorite-button" title="Add to favorites">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="trash-bin" class="tool-content">
+                <h1 class="tool-title">Trash Bin</h1>
+                <div id="trash-bin-gallery" class="image-gallery">
+                    <!-- Deleted images will be added here dynamically -->
+                </div>
+            </div>
+            <div id="image-history" class="tool-content">
+                <h2>Image Generation History</h2>
+                <div id="history-gallery" class="image-gallery">
+                    <!-- Generated images will be displayed here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for image details -->
+    <div id="image-modal" class="modal">
+        <div id="modal-content" class="modal-content"></div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
